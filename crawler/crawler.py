@@ -26,12 +26,12 @@ def crawl():
                     apartment.get('rooms_count', ''),
                     apartment.get('floor', ''),
                     apartment.get('floors_count', ''),
-                    apartment.get('wall_type_uk', ''),
-                    apartment.get('street_name_uk', ''),
-                    apartment.get('district_name_uk', ''),
-                    apartment.get('city_name_uk', ''),
-                    apartment.get('state_name_uk', ''),
-                    apartment.get('metro_station_name_uk', ''),
+                    apartment.get('wall_type_uk', apartment.get('wall_type', '')),
+                    apartment.get('street_name_uk', apartment.get('street_name', '')),
+                    apartment.get('district_name_uk', apartment.get('district_name', '')),
+                    apartment.get('city_name_uk', apartment.get('city_name', '')),
+                    apartment.get('state_name_uk', apartment.get('state_name', '')),
+                    apartment.get('metro_station_name_uk', apartment.get('metro_station_name', '')),
                     apartment.get('metro_station_brunch', ''),
                     bool(characteristics_values.get('1480', '')),  # furnished
                     bool(characteristics_values.get('1478', '')),  # with heating
@@ -40,10 +40,9 @@ def crawl():
                     bool(characteristics_values.get('1481', '')),  # jacuzzi
                     bool(apartment.get('with_panoramas', '')),
                     apartment.get('publishing_date', ''),
-                    price
+                    int(price)
                     ]
         print(features)
-        features = map(lambda f: str(f), features)
         append2csv(features)
 
 
@@ -74,7 +73,8 @@ def load_apartment_ids() -> List[str]:
 
 def append2csv(columns: List[str]):
     with open('../apartments.csv', 'a', encoding='utf8') as csv:
-        line = ' ; '.join(columns)
+        columns = map(lambda f: str(f), columns)
+        line = ', '.join(columns)
         csv.write('%s\n' % line)
 
 
