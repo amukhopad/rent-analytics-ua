@@ -7,5 +7,7 @@ GET        /                    controllers.HomeController.index
 GET        /count               controllers.CountController.count
 
 
+POST       /predicton/price     controllers.PriceController.predictPrice
+
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)

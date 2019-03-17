@@ -9,7 +9,8 @@ usd_rate = 27.5
 apartments_for_rent_params = {
     "category": 1,
     "realty_type": 2,
-    "operation_type": 3
+    "operation_type": 3,
+    "city_id": 10
 }
 
 
@@ -57,28 +58,27 @@ def parse_apartment(apt_id: str, apt: dict):
             apt.get('rooms_count', ''),
             apt.get('floor', ''),
             apt.get('floors_count', ''),
-            apt.get('wall_type_uk', apt.get('wall_type', '')),
-            apt.get('street_name_uk', apt.get('street_name', '')),
-            apt.get('district_name_uk', apt.get('district_name', '')),
-            apt.get('city_name_uk', apt.get('city_name', '')),
-            apt.get('state_name_uk', apt.get('state_name', '')),
-            apt.get('metro_station_name_uk', apt.get('metro_station_name', '')),
+            apt.get('wall_type', ''),
+            apt.get('district_name', ''),
+            apt.get('city_name', ''),
+            apt.get('state_name', ''),
+            apt.get('metro_station_name', ''),
             apt.get('metro_station_brunch', ''),
-            bool(features.get('1480', '')),  # furnished
-            bool(features.get('1478', '')),  # with heating
-            bool(features.get('1479', '')),  # with repair
-            bool(features.get('1489', '')),  # with balcony
-            bool(features.get('1481', '')),  # jacuzzi
-            bool(apt.get('with_panoramas', '')),
+            1 if bool(features.get('1480', '')) else 0,  # furnished
+            1 if bool(features.get('1478', '')) else 0,  # with heating
+            1 if bool(features.get('1479', '')) else 0,  # with repair
+            1 if bool(features.get('1489', '')) else 0,  # with balcony
+            1 if bool(features.get('1481', '')) else 0,  # jacuzzi
+            1 if bool(apt.get('with_panoramas', '')) else 0,
             apt.get('publishing_date', ''),
-            int(price)
+            float(price)
             ]
 
 
 def append2csv(columns: List[str]):
-    with open('../apartments.csv', 'a', encoding='utf8') as csv:
+    with open('../apartments_kyiv.csv', 'a', encoding='utf8') as csv:
         columns = map(lambda f: str(f), columns)
-        line = ', '.join(columns)
+        line = ','.join(columns)
         csv.write('%s\n' % line)
 
 

@@ -1,7 +1,9 @@
 import java.time.Clock
 
 import com.google.inject.AbstractModule
-import services.{ApplicationTimer, AtomicCounter, Counter}
+import model.{ApartmentRepository, DefaultApartmentRepository}
+import org.apache.spark.sql.SparkSession
+import services._
 
 /**
  * This class is a Guice module that tells Guice how to bind several
@@ -19,6 +21,9 @@ class Module extends AbstractModule {
     bind(classOf[Clock]).toInstance(Clock.systemDefaultZone)
     bind(classOf[ApplicationTimer]).asEagerSingleton()
     bind(classOf[Counter]).to(classOf[AtomicCounter])
+
+    bind(classOf[PriceService]).to(classOf[DefaultPriceService])
+    bind(classOf[ApartmentRepository]).to(classOf[DefaultApartmentRepository])
   }
 
 }
