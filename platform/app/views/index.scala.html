@@ -1,19 +1,22 @@
+@(predictedPrice: String = "", errors: Seq[String] = Seq())(implicit req: RequestHeader)
 @*
- * This template takes a single argument, a String containing a
- * message to display.
- *@
-@(message: String)
+* Call the `main` template with two arguments. The first
+* argument is a `String` with the title of the page, the second
+* argument is an `Html` object containing the body of the page.
+*@
+@main(title = "Rent Analytics Kyiv") {
 
-@*
- * Call the `main` template with two arguments. The first
- * argument is a `String` with the title of the page, the second
- * argument is an `Html` object containing the body of the page.
- *@
-@main("Welcome to Play") {
+    @predictionform()
 
-    @*
-     * Get an `Html` object by calling the built-in Play welcome
-     * template and passing a `String` message.
-     *@
+    @if(predictedPrice != "") {
+        <div class="prediction alert-success">@predictedPrice</div>
+    }
 
+    @if(errors.nonEmpty) {
+        <div class="error alert-error">
+            @for(err <- errors) {
+                @err
+            }
+        </div>
+    }
 }

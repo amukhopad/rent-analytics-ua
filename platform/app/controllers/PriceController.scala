@@ -16,18 +16,35 @@ class PriceController @Inject()(
 ) extends AbstractController(cc) {
 
   def predictPrice = Action { implicit request =>
+    val apartmentForm = bindApartmentForm
+    if (apartmentForm.errors.isEmpty) {
+      val response = priceService.calculatePrice(apartmentForm.get)
+      Try(response) match {
+        case Failure(ex) =>
+          ex.printStackTrace()
+          BadRequest(views.html.index(
+          errors = Seq(ex.getMessage)))
+        case Success(result) => Ok(views.html.index(
+          predictedPrice = f"$result%.2f"))
+      }
+    } else {
+      BadRequest(views.html.index(
+        errors = apartmentForm.errors.flatMap(_.messages)))
+    }
+  }
+
+  private def bindApartmentForm(implicit request: Request[_]): Form[ApartmentData] = {
     val aptForm = Form(
       mapping(
         "area" -> bigDecimal,
         "district" -> text,
+        "metro" -> text,
+        "wallType" -> text,
         "city" -> text
       )(ApartmentData.apply)(ApartmentData.unapply)
     )
-    val apt = aptForm.bindFromRequest().get
-
-    Try(priceService.calculatePrice(apt)) match {
-      case Failure(ex) => BadRequest(ex.getMessage)
-      case Success(r) => Ok(r.toString)
-    }
+    aptForm.bindFromRequest()
   }
+
+
 }

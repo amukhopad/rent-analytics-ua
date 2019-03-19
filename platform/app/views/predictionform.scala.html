@@ -1,0 +1,23 @@
+@import entities.ApartmentData
+@import helper._
+
+@()(implicit req: RequestHeader)
+
+<div class="predictionform-actions">
+    @helper.form(action = CSRF(routes.PriceController.predictPrice()), 'id -> "prediction") {
+        <input name="area" type="number"/>
+
+        <select class="dropdown" id="district" name="district">
+            <option value="">-- Оберіть район --</option>
+        </select>
+
+        <select class="dropdown" id="metro" name="metro">
+            <option value="">-- Оберіть район --</option>
+        </select>
+        <select class="dropdown" id="wall_type" name="wallType">
+            <option value="">-- Оберіть район --</option>
+        </select>
+        <input type="hidden" name="city" value="Киев">
+        <input type="submit" value="Розрахувати"/>
+    }
+</div>

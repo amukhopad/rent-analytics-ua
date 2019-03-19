@@ -33,32 +33,28 @@ object Analytics extends App {
 
   val dataset = df
     .withColumn("labels", 'price.cast("Double"))
-    .select('district, 'area, 'labels)
+    .select('district, 'area, 'metro, 'wall_type, 'labels)
+    .where('metro.isNotNull && 'district.isNotNull)
     .cache()
 
-  dataset.show(5, truncate = false)
+  dataset.show(10, truncate = false)
 
-  val stringFields = Array("district")
+  val stringFields = Array("district", "metro", "wall_type")
 
   val indexers = stringFields
     .map { columnName =>
       new StringIndexer()
         .setInputCol(columnName)
         .setOutputCol(columnName + "_idx")
-        .setHandleInvalid("skip")
+        .setHandleInvalid("keep")
     }
 
   val ohe = new OneHotEncoderEstimator()
     .setInputCols(stringFields.map(_ + "_idx"))
     .setOutputCols(stringFields.map(_ + "_vec"))
 
-  val features = dataset.columns
-    .filterNot("labels".equals)
-    .filterNot(stringFields.contains)
-    .filterNot(_.contains("_idx"))
-
   val assembler = new VectorAssembler()
-    .setInputCols(Array("area", "district_vec"))
+    .setInputCols(Array("area", "district_vec", "metro_vec", "wall_type_vec"))
     .setOutputCol("assembled_features")
     .setHandleInvalid("skip")
 
@@ -89,9 +85,9 @@ object Analytics extends App {
     .setMetricName("rmse")
 
   val paramGrid = new ParamGridBuilder()
-    .addGrid(regressor.minInfoGain, Array(0, 1e-10, 0.01, 0.1, 1, 5, 10, 100))
+    .addGrid(regressor.minInfoGain, Array(0, 1e-10, 0.01, 0.1, 1, 10, 100))
     .addGrid(regressor.maxDepth, Array(30))
-    .addGrid(regressor.stepSize, Array(1e-10, 0.01, 0.1, 0.25, 0.5, 0.7, 1))
+    .addGrid(regressor.stepSize, Array(0.01, 0.1, 0.25, 0.5, 0.7, 1))
     .build()
 
   val model = new CrossValidator()
@@ -101,13 +97,22 @@ object Analytics extends App {
     .setNumFolds(7)
     .fit(dataset)
 
+
+  val sample = model.transform(dataset.sample(10.0 / dataset.count())).cache()
+
+  sample.select("district", "district_idx", "district_vec").show(10, truncate = false)
+
+  sample.select("assembled_features", "features").show(10, truncate = false)
+
+  sample.select("features", "labels", "prediction").show(10)
+
   val metrics = model.getEstimatorParamMaps
     .zip(model.avgMetrics)
     .maxBy(_._2)
     ._1
 
-  println(s"avg metrics: ${metrics}")
-  val best = model.bestModel.extractParamMap()
+  println(s"Avg metrics: ${metrics}")
+  val best = model.bestModel.parent.extractParamMap()
   println(best)
 
   val modelLocation = appConf.get("app.model.location")

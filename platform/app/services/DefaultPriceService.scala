@@ -21,8 +21,8 @@ class DefaultPriceService @Inject()(
 
   private def buildDfFromData(apt: ApartmentData)(implicit spark: SparkSession): DataFrame =
     spark.createDataFrame(Seq(
-      (apt.area, apt.district)
-    )).toDF("area", "district")
+      (apt.area, apt.wallType, apt.district, apt.metro)
+    )).toDF("area", "wall_type", "district", "metro")
 
   private def predictPrice(model: CrossValidatorModel, df: DataFrame): Double = {
     model.transform(df)
