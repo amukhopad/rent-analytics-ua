@@ -1,8 +1,8 @@
 package model
 
 import entities.ApartmentData
-import org.apache.spark.ml.PipelineModel
+import org.apache.spark.ml.tuning.CrossValidatorModel
 
 trait ApartmentRepository {
-  def retrieveModel(apt: ApartmentData): PipelineModel
+  def retrieveModel(apt: ApartmentData): CrossValidatorModel
 }

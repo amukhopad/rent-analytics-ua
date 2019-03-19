@@ -1,21 +1,24 @@
 package ua.edu.ukma.fin
 
+import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.evaluation.RegressionEvaluator
 import org.apache.spark.ml.feature._
-import org.apache.spark.ml.regression.{GBTRegressor, LinearRegression}
+import org.apache.spark.ml.regression.GBTRegressor
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
-import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions._
-
-import scala.reflect.io.Path
-import scala.util.Try
 
 object Analytics extends App {
+  val appConf = Conf()
+
   val spark = SparkSession
     .builder()
-    .appName("analytics")
-    .master("local[*]")
+    .appName(appConf.get("app.name"))
+    .master(appConf.get("app.spark.master"))
+    .config("spark.hadoop.fs.s3a.endpoint", appConf.get("fs.s3.endpoint"))
+    .config("spark.hadoop.fs.s3a.access.key", appConf.get("fs.s3.access.key"))
+    .config("spark.hadoop.fs.s3a.secret.key", appConf.get("fs.s3.secret.key"))
+    .config("spark.hadoop.fs.s3a.path.style.access", appConf.get("fs.s3.path.style.access"))
+    .config("spark.hadoop.fs.s3a.impl", appConf.get("fs.s3.impl"))
     .getOrCreate()
 
   import spark.implicits._
@@ -30,15 +33,12 @@ object Analytics extends App {
 
   val dataset = df
     .withColumn("labels", 'price.cast("Double"))
-    .select(
-      'district, 'rooms, 'area, 'wall_type, 'metro, 'view, 'jacuzzi, 'labels)
+    .select('district, 'area, 'labels)
     .cache()
 
   dataset.show(5, truncate = false)
 
-  val Array(training, test) = dataset.randomSplit(Array(0.70, 0.30))
-
-  val stringFields = Array("district", "metro", "wall_type")
+  val stringFields = Array("district")
 
   val indexers = stringFields
     .map { columnName =>
@@ -65,10 +65,14 @@ object Analytics extends App {
   val scaler = new MinMaxScaler()
     .setInputCol("assembled_features")
     .setOutputCol("features")
+    .setMin(0)
+    .setMax(1)
 
-  val regressor = new LinearRegression()
+  val regressor = new GBTRegressor()
     .setFeaturesCol("features")
     .setLabelCol("labels")
+    .setFeatureSubsetStrategy("auto")
+    .setMaxDepth(30)
     .setMaxIter(10)
 
   val pipeline = new Pipeline().setStages(
@@ -79,25 +83,23 @@ object Analytics extends App {
       regressor
     ))
 
-
   val evaluator = new RegressionEvaluator()
     .setLabelCol("labels")
     .setPredictionCol("prediction")
     .setMetricName("rmse")
 
   val paramGrid = new ParamGridBuilder()
-    .addGrid(regressor.regParam, Array(0.01, 0.25, 0.5, 1.0))
-    .addGrid(regressor.tol, Array(1e-9, 1e-6, 0.1, 1, 3))
-    .addGrid(regressor.elasticNetParam, Array(0.0, 0.01, 0.1, 1))
-    .addGrid(regressor.epsilon, Array(1.000001, 1.1, 1.35, 1.5, 2, 3))
-    .addGrid(regressor.standardization, Array(true, false))
+    .addGrid(regressor.minInfoGain, Array(0, 1e-10, 0.01, 0.1, 1, 5, 10, 100))
+    .addGrid(regressor.maxDepth, Array(30))
+    .addGrid(regressor.stepSize, Array(1e-10, 0.01, 0.1, 0.25, 0.5, 0.7, 1))
     .build()
 
   val model = new CrossValidator()
     .setEstimatorParamMaps(paramGrid)
     .setEstimator(pipeline)
     .setEvaluator(evaluator)
-    .fit(training)
+    .setNumFolds(7)
+    .fit(dataset)
 
   val metrics = model.getEstimatorParamMaps
     .zip(model.avgMetrics)
@@ -105,26 +107,9 @@ object Analytics extends App {
     ._1
 
   println(s"avg metrics: ${metrics}")
+  val best = model.bestModel.extractParamMap()
+  println(best)
 
-  val best = model.bestModel.asInstanceOf[PipelineModel]
-  val predicted = best.transform(test)
-
-  predicted
-  .select('features, 'labels, 'prediction)
-    .show(2500)
-
-  val mean = predicted.select(avg('prediction)).first().getDouble(0)
-
-  val rmse = evaluator.evaluate(predicted)
-
-  val variation = rmse / mean * 100
-
-  println(s"\nRoot Mean Squared Error (RMSE) on test data = $rmse")
-  println(s"Mean is $mean\n")
-  printf(s"Coeficient of variation is %.2f%%\n\n", variation)
-
-
-  val modelLocation = "/Users/enginebreaksdown/dev/rent-analytics-ua/ml_model"
-  Try(Path(modelLocation).deleteRecursively())
-  model.save(modelLocation)
+  val modelLocation = appConf.get("app.model.location")
+  model.write.overwrite().save(modelLocation)
 }
