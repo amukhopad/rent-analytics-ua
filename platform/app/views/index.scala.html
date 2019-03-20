@@ -5,12 +5,15 @@
 * argument is an `Html` object containing the body of the page.
 *@
 @main(title = "Rent Analytics Kyiv") {
+    <span class="contact100-form-title">
+        @if(predictedPrice == "") {
+            <span>Розрахуй ціну аренди тут</span>
+        } else {
+            <span class="count">@predictedPrice</span>
+        }
+    </span>
 
     @predictionform()
-
-    @if(predictedPrice != "") {
-        <div class="prediction alert-success">@predictedPrice</div>
-    }
 
     @if(errors.nonEmpty) {
         <div class="error alert-error">
