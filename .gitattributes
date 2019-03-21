@@ -1,3 +1,7 @@
 *.css linguist-vendored
 *.html linguist-vendored
-platform/public/* linguist-vendored
+
+platform/public/vendor/* linguist-vendored
+platform/public/fonts/* linguist-vendored
+platform/public/css/* linguist-vendored
+
