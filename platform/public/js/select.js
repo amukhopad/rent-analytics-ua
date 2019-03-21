@@ -1,4 +1,5 @@
 $(document).ready(function () {
+
   $('#district').unbind('all')
     .html(populateDistricts())
     .on('change', function () {
@@ -14,8 +15,24 @@ $(document).ready(function () {
     });
 
   $('#wallType').unbind('all').html(populateWallTypes());
-  $('#area').off('focusout.bs.validator');
+
+  loadLastForm();
 });
+
+function loadLastForm() {
+  const form = $('#lastForm');
+  selectOption(form, 'area');
+  selectOption(form, 'district');
+  selectOption(form, 'metro');
+  selectOption(form, 'wallType');
+  form.remove();
+}
+
+function selectOption(form, key) {
+  if (form.attr(key)) {
+    $(`#${key}`).val(form.attr(key)).change()
+  }
+}
 
 function populateDistricts() {
   let options = '';

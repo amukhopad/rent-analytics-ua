@@ -1,6 +1,7 @@
 @import entities.ApartmentData
 
-@()(implicit req: RequestHeader)
+@()()(implicit req: RequestHeader)
+
 
 <div>
     @helper.form(action = helper.CSRF(routes.PriceController.predictPrice()), 'id -> "prediction-form") {

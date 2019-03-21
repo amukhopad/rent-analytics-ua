@@ -1,7 +1,7 @@
 @(text: String, id: String, errorMsg: String)
 <div class="wrap-input100" data-validate="@errorMsg">
     <span class="label-input100"> @text</span>
-    <input class="input100" type="number" step="any" value="15.5" name="@id"
+    <input class="input100" id="@id" type="number" step="any" value="15.5" name="@id"
             placeholder="Наприклад, 33.8"/>
     <span class="focus-input100"></span>
 </div>

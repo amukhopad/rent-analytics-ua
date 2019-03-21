@@ -1,10 +1,20 @@
-@(predictedPrice: String = "", errors: Seq[String] = Seq())(implicit req: RequestHeader)
+@import entities.ApartmentData
+@(lastForm: Map[String, String] = Map(),
+    predictedPrice: String = "",
+    errors: Seq[String] = Seq())(implicit req: RequestHeader)
 @*
 * Call the `main` template with two arguments. The first
 * argument is a `String` with the title of the page, the second
 * argument is an `Html` object containing the body of the page.
 *@
 @main(title = "Rent Analytics Kyiv") {
+    <div id="lastForm"
+        area="@lastForm.getOrElse("area", "")"
+        district="@lastForm.getOrElse("district", "")"
+        metro="@lastForm.getOrElse("metro", "")"
+        wallType="@lastForm.getOrElse("wallType", "")"
+    hidden></div>
+
     <span class="contact100-form-title">
         @if(predictedPrice == "") {
             <span>Розрахуй ціну аренди тут</span>

@@ -1,7 +1,7 @@
 package entities
 
 case class ApartmentData(
-    area: BigDecimal,
+    area: Double,
     district: String,
     metro: String,
     wallType: String,
