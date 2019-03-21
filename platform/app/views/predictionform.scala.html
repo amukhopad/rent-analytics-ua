@@ -4,7 +4,8 @@
 
 
 <div>
-    @helper.form(action = helper.CSRF(routes.PriceController.predictPrice()), 'id -> "prediction-form") {
+    @helper.form(action = routes.PriceController.predictPrice(), 'id -> "prediction-form") {
+        @helper.CSRF.formField
 
         @form.number("Площа квартири, кв. метрів", "area", "Потрібно зазначити площу")
 

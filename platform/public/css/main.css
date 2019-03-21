@@ -25,12 +25,6 @@
   src: url('../fonts/roboto/Roboto-Light.ttf');
 }
 
-
-
-
-/*//////////////////////////////////////////////////////////////////
-[ RESTYLE TAG ]*/
-
 * {
 	margin: 0px; 
 	padding: 0px; 
@@ -335,6 +329,11 @@ textarea.input100 {
 
 .wrap-contact100-form-btn:hover .contact100-form-bgbtn {
   left: 0;
+}
+
+
+.wrap-contact100-form-btn:disabled .contact100-form-bgbtn {
+  opacity: .6;
 }
 
 .contact100-form-btn i {

@@ -13,7 +13,7 @@ class DefaultApartmentRepository @Inject()(
     appConf: Configuration) extends ApartmentRepository {
   private val cache = CacheBuilder.newBuilder()
     .maximumSize(2)
-    .refreshAfterWrite(24, TimeUnit.HOURS)
+    .refreshAfterWrite(7, TimeUnit.DAYS)
     .build(
       new CacheLoader[String, CrossValidatorModel] {
         def load(path: String): CrossValidatorModel = {
