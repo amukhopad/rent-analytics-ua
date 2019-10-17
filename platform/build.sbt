@@ -1,6 +1,6 @@
 name := "platform"
  
-version := "1.0" 
+version := "1.0"
 
 lazy val `platform` = (project in file(".")).enablePlugins(PlayScala)
 
@@ -28,3 +28,6 @@ dependencyOverrides += "com.fasterxml.jackson.module" % "jackson-module-scala_2.
 
 dependencyOverrides += "org.apache.hadoop" % "hadoop-common" % hadoopVersion
 dependencyOverrides += "commons-io" % " commons-io" % "2.4"
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
+libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "test"

@@ -1,4 +1,6 @@
-logLevel := Level.Warn
+import sbt.util
+
+logLevel := util.Level.Error
 
 resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/"
 

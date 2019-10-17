@@ -9,7 +9,7 @@ export JAVA_OPTS="-Xmx${mem}m ${JAVA_OPTS}"
 PROJECT_LOCATION="${PROJECT_LOCATION:-.}"
 
 function build() {
-    if [[ ! -f ${PROJECT_LOCATION}/target/universal/stage/bin/platform ]]; then
+    if [[ ! -f ${PROJECT_LOCATION}/target/bin/platform ]]; then
         sbt clean stage
     fi
 }
@@ -33,7 +33,7 @@ function setupLogs() {
 
 
 function runApp() {
-    nohup sudo -b JAVA_OPTS=${JAVA_OPTS} ${PROJECT_LOCATION}/target/universal/stage/bin/platform \
+    nohup sudo -b JAVA_OPTS=${JAVA_OPTS} ${PROJECT_LOCATION}/target/bin/platform \
         -Dhttp.address=0.0.0.0 \
         -Dplay.http.secret.key=${secretKey} \
         -Dplay.filters.hosts.allowed.0=. \

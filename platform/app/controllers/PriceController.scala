@@ -34,7 +34,8 @@ class PriceController @Inject()(
     }
   }
 
-  private def bindApartmentForm(implicit request: Request[_]): Form[ApartmentData] = {
+  private def bindApartmentForm(
+      implicit request: Request[_]): Form[ApartmentData] = {
     val aptForm = Form(
       mapping(
         "area" -> of(doubleFormat),

@@ -6,6 +6,7 @@ import org.apache.spark.ml.feature._
 import org.apache.spark.ml.regression.GBTRegressor
 import org.apache.spark.ml.tuning.{CrossValidator, ParamGridBuilder}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions._
 
 object Analytics extends App {
   val appConf = Conf()
@@ -27,9 +28,6 @@ object Analytics extends App {
     .option("header", "true")
     .option("inferSchema", "true")
     .load("/Users/enginebreaksdown/dev/rent-analytics-ua/apartments_kyiv.csv")
-
-  df.show(5)
-  df.printSchema()
 
   val dataset = df
     .withColumn("labels", 'price.cast("Double"))
@@ -54,7 +52,7 @@ object Analytics extends App {
     .setOutputCols(stringFields.map(_ + "_vec"))
 
   val assembler = new VectorAssembler()
-    .setInputCols(Array("area", "district_vec", "metro_vec", "wall_type_vec"))
+    .setInputCols("area" +: stringFields.map(_ + "_vec"))
     .setOutputCol("assembled_features")
     .setHandleInvalid("skip")
 
@@ -86,7 +84,6 @@ object Analytics extends App {
 
   val paramGrid = new ParamGridBuilder()
     .addGrid(regressor.minInfoGain, Array(0, 1e-10, 0.01, 0.1, 1, 10, 100))
-    .addGrid(regressor.maxDepth, Array(30))
     .addGrid(regressor.stepSize, Array(0.01, 0.1, 0.25, 0.5, 0.7, 1))
     .build()
 
@@ -100,10 +97,6 @@ object Analytics extends App {
 
   val sample = model.transform(dataset.sample(10.0 / dataset.count())).cache()
 
-  sample.select("district", "district_idx", "district_vec").show(10, truncate = false)
-
-  sample.select("assembled_features", "features").show(10, truncate = false)
-
   sample.select("features", "labels", "prediction").show(10)
 
   val metrics = model.getEstimatorParamMaps
@@ -112,8 +105,17 @@ object Analytics extends App {
     ._1
 
   println(s"Avg metrics: ${metrics}")
-  val best = model.bestModel.parent.extractParamMap()
-  println(best)
+
+  val rmse = evaluator.evaluate(sample)
+
+  val mean = sample.select(avg('labels)).first().getDouble(0)
+
+  println(
+    s"""
+       |RMSE: ${rmse}
+       |MEAN: ${mean}
+       |CV: ${rmse / mean}
+       |""".stripMargin)
 
   val modelLocation = appConf.get("app.model.location")
   model.write.overwrite().save(modelLocation)

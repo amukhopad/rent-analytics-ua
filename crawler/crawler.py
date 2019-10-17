@@ -64,11 +64,16 @@ def parse_apartment(apt_id: str, apt: dict):
             apt.get('state_name', ''),
             apt.get('metro_station_name', ''),
             apt.get('metro_station_brunch', ''),
-            1 if bool(features.get('1480', '')) else 0,  # furnished
-            1 if bool(features.get('1478', '')) else 0,  # with heating
-            1 if bool(features.get('1479', '')) else 0,  # with repair
-            1 if bool(features.get('1489', '')) else 0,  # with balcony
-            1 if bool(features.get('1481', '')) else 0,  # jacuzzi
+            # furnished
+            1 if bool(features.get('1480', '')) else 0,
+            # with heating
+            1 if bool(features.get('1478', '')) else 0,
+            # with repair
+            1 if bool(features.get('1479', '')) else 0,
+            # with balcony
+            1 if bool(features.get('1489', '')) else 0,
+            # jacuzzi
+            1 if bool(features.get('1481', '')) else 0,
             1 if bool(apt.get('with_panoramas', '')) else 0,
             apt.get('publishing_date', ''),
             float(price)
